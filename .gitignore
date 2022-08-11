@@ -1,4 +1,5 @@
+riscos-files
+node_modules
 .idea
 *.iml
 .DS_Store
-
