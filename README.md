@@ -22,7 +22,7 @@ const sprite = Sprite.fromUint8Array(array);
 const outlines = FontOutlines.fromUint8Array(array);
 ```
 
-The library has some scripts that can be used convert files into either SVG or PNG
+The library has some scripts that can be used convert files into either SVG or PNG.
 
 ### draw:svg
 
@@ -50,7 +50,7 @@ npm run sprite:png sprites,ff9
 
 ## Project status
 
-The library is provided on an as is basis.
+The library is provided on an as-is basis.
 
 ---
 [file-documentation]: http://www.riscos.com/support/developers/prm/fileformats.html
