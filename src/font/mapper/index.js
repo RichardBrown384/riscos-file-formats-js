@@ -14,7 +14,7 @@ const SVG_PATH_COMMANDS = {
   [OUTLINE_SEGMENT_CURVE]: 'C',
 };
 
-function mapFillPath({ fillPath = [] }) {
+function mapFillPathDefinition(fillPath) {
   const definition = [];
   for (let i = 0; i < fillPath.length; i += 1) {
     const { type, coords } = fillPath[i];
@@ -25,18 +25,18 @@ function mapFillPath({ fillPath = [] }) {
   return definition.join('');
 }
 
-function mapCharacterOutline(character, transform) {
+function mapFillPath(character, transform) {
   return {
     tag: 'path',
     attributes: {
       'fill-rule': 'evenodd',
-      d: mapFillPath(character),
+      d: mapFillPathDefinition(character.fillPath),
       ...(transform && { transform }),
     },
   };
 }
 
-function mapCharacterOutlines(charCode, chunks) {
+function mapCharacterFillPaths(charCode, chunks) {
   function getCharacter(code) {
     const chunkNumber = code >> 5;
     const characterIndex = code & 0x1F;
@@ -44,14 +44,20 @@ function mapCharacterOutlines(charCode, chunks) {
   }
 
   const paths = [];
+  function mapNonEmptyFillPath(character, transform) {
+    if (character.fillPath?.length) {
+      paths.push(mapFillPath(character, transform))
+    }
+  }
+
   const character = getCharacter(charCode);
-  paths.push(mapCharacterOutline(character));
+  mapNonEmptyFillPath(character);
   const { composites = [] } = character;
   for (let i = 0; i < composites.length; i += 1) {
     const { code, offset: [dx, dy] } = composites[i];
     const compositeCharacter = getCharacter(code);
     const compositeTransform = `translate(${dx} ${dy})`;
-    paths.push(mapCharacterOutline(compositeCharacter, compositeTransform));
+    mapNonEmptyFillPath(compositeCharacter, compositeTransform);
   }
   return paths;
 }
@@ -66,7 +72,7 @@ function mapCharacters(columns, rows, width, height, characters, chunks) {
       attributes: {
         transform: `translate(${i * width}, ${j * height})`,
       },
-      children: mapCharacterOutlines(charCode, chunks),
+      children: mapCharacterFillPaths(charCode, chunks),
     });
   }
   return groups;
