@@ -2,6 +2,8 @@
 
 const Constants = require('../constants');
 
+const IDENTIFIER_DRAW = 'Draw';
+
 const {
   fail,
   checkAlignment,
@@ -219,6 +221,11 @@ function readDraw(view) {
   };
 }
 
+function isDrawHeaderPresent(view) {
+  return readHeader(view).identifier === IDENTIFIER_DRAW;
+}
+
 module.exports = {
   readDraw,
+  isDrawHeaderPresent,
 };

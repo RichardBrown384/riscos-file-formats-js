@@ -1,6 +1,6 @@
 const Constants = require('./constants');
 const { readMetrics } = require('./serialisation/read-metrics');
-const { readOutlines } = require('./serialisation/read-outlines');
+const { readOutlines, isFontOutlineHeaderPresent } = require('./serialisation/read-outlines');
 const { mapOutlines } = require('./mapper');
 
 module.exports = {
@@ -13,6 +13,9 @@ module.exports = {
     },
   },
   FontOutlines: {
+    isHeaderPresent(array) {
+      return isFontOutlineHeaderPresent(array.buffer);
+    },
     fromUint8Array(array) {
       return readOutlines(array.buffer);
     },

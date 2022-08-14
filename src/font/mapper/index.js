@@ -46,7 +46,7 @@ function mapCharacterFillPaths(charCode, chunks) {
   const paths = [];
   function mapNonEmptyFillPath(character, transform) {
     if (character.fillPath?.length) {
-      paths.push(mapFillPath(character, transform))
+      paths.push(mapFillPath(character, transform));
     }
   }
 

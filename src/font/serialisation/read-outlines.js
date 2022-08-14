@@ -13,6 +13,8 @@ const {
   check,
 } = require('../../common/checks');
 
+const IDENTIFIER_FONT = 'FONT';
+
 function signExtend12(v) {
   return signExtend(v, 12);
 }
@@ -280,16 +282,12 @@ function readScaffold(buffer, position, indexCount, flags) {
   };
 }
 
-function readOutlines(buffer, position = 0) {
+function readOutlinesHeader(buffer, position) {
   const d = new RiscOSView(buffer, position);
 
-  const magic = d.readString(4);
+  const identifier = d.readString(4);
   const bpp = d.readUint8();
   const version = d.readUint8();
-
-  check(magic === 'FONT', 'Incorrect file signature, expected FONT');
-  check(bpp === 0, 'Bitmap outline, expected outlines');
-  check([6, 7, 8].includes(version), 'Only version 6, 7, and 8 outlines supported');
 
   const designSize = d.readUint16();
 
@@ -299,6 +297,31 @@ function readOutlines(buffer, position = 0) {
     width: d.readInt16(),
     height: d.readInt16(),
   };
+
+  return {
+    headerSize: d.getPosition() - position,
+    identifier,
+    bpp,
+    version,
+    designSize,
+    boundingBox,
+  };
+}
+
+function readOutlines(buffer, position = 0) {
+  const header = readOutlinesHeader(buffer, position);
+  const {
+    headerSize,
+    identifier,
+    bpp,
+    version,
+  } = header;
+
+  check(identifier === IDENTIFIER_FONT, 'Incorrect file signature, expected FONT');
+  check(bpp === 0, 'Bitmap outline, expected outlines');
+  check([6, 7, 8].includes(version), 'Only version 6, 7, and 8 outlines supported');
+
+  const d = new RiscOSView(buffer, position + headerSize);
 
   let chunkIndexOffset = d.getPosition();
   let chunkCount = 8;
@@ -319,19 +342,18 @@ function readOutlines(buffer, position = 0) {
   const chunks = readChunks(buffer, chunkIndexOffset, version, chunkCount);
 
   return {
-    header: {
-      magic,
-      bpp,
-      version,
-      designSize,
-      boundingBox,
-    },
+    header,
     scaffold,
     chunkCount,
     chunks,
   };
 }
 
+function isFontOutlineHeaderPresent(buffer, position = 0) {
+  return readOutlinesHeader(buffer, position).identifier === IDENTIFIER_FONT;
+}
+
 module.exports = {
   readOutlines,
+  isFontOutlineHeaderPresent,
 };
