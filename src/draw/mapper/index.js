@@ -145,7 +145,7 @@ function mapSpriteObject(boundingBox, spriteObject, array) {
       width,
       height,
       preserveAspectRatio: 'none',
-      'xlink:Href': `data:image/png;base64,${data}`,
+      'xlink:href': `data:image/png;base64,${data}`,
       transform: `translate(${minX}, ${minY}) translate(0, ${height}) scale(1, -1)`,
     },
   };
