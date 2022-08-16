@@ -13,8 +13,8 @@ module.exports.CAP_ROUND = 1;
 module.exports.CAP_SQUARE = 2;
 module.exports.CAP_TRIANGLE = 3;
 
-module.exports.WINDING_NON_ZERO = 0;
-module.exports.WINDING_EVEN_ODD = 1;
+module.exports.WINDING_RULE_NON_ZERO = 0;
+module.exports.WINDING_RULE_EVEN_ODD = 1;
 
 module.exports.PATH_TAG_END = 0;
 module.exports.PATH_TAG_MOVE = 2;
