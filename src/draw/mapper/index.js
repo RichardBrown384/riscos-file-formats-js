@@ -4,10 +4,9 @@ const { Sprite } = require('../../sprite');
 const MergingBoundingBox = require('./merging-bounding-box');
 
 const Constants = require('../constants');
-const mapPathElements = require('./path-elements-map');
-const mapPathAttributes = require('./path-attributes-map');
 
-const DRAW_UNITS_TO_USER_UNITS = (1.0 / 640.0) * (4.0 / 3.0);
+const { mapPath, mapSvg, mapImage } = require('./svg');
+
 const DRAW_UNITS_PER_INCH = 180 * 256;
 
 const FIXED_POINT_CONVERSION_FACTOR = 65536.0;
@@ -21,12 +20,21 @@ function mapTransform(transform) {
 
 function mapPathObject(pathObject) {
   const { path, ...attributes } = pathObject;
+  return mapPath(path, attributes);
+}
+
+function mapSpriteShared(array, start, end) {
+  const slice = array.slice(start, end);
+  const sprite = Sprite.fromUint8Array(slice);
+  const rgbaImage = Sprite.RGBAImage.fromSprite(sprite);
+  const png = Png.fromRGBAImage(rgbaImage);
+  const image = Base64.fromUint8Array(png);
   return {
-    tag: 'path',
-    attributes: {
-      d: mapPathElements(path),
-      ...(mapPathAttributes(attributes)),
-    },
+    image,
+    pixelWidth: sprite.pixelWidth,
+    pixelHeight: sprite.pixelHeight,
+    xDpi: sprite.xDpi || 90,
+    yDpi: sprite.yDpi || 90,
   };
 }
 
@@ -35,28 +43,14 @@ function mapSpriteObject(boundingBox, spriteObject, array) {
     start,
     end,
   } = spriteObject;
-  const slice = array.slice(start, end);
-  const sprite = Sprite.fromUint8Array(slice);
-  const rgbaImage = Sprite.RGBAImage.fromSprite(sprite);
-  const png = Png.fromRGBAImage(rgbaImage);
-  const data = Base64.fromUint8Array(png);
+  const { image } = mapSpriteShared(array, start, end);
   const {
     minX, maxX, minY, maxY,
   } = boundingBox;
   const width = maxX - minX;
   const height = maxY - minY;
-  return {
-    tag: 'image',
-    attributes: {
-      x: 0,
-      y: 0,
-      width,
-      height,
-      preserveAspectRatio: 'none',
-      'xlink:href': `data:image/png;base64,${data}`,
-      transform: `translate(${minX}, ${minY}) translate(0, ${height}) scale(1, -1)`,
-    },
-  };
+  const transform = [1, 0, 0, 1, minX, minY];
+  return mapImage(image, width, height, transform);
 }
 
 function mapSpriteRotatedObject(spriteObject, array) {
@@ -65,32 +59,17 @@ function mapSpriteRotatedObject(spriteObject, array) {
     start,
     end,
   } = spriteObject;
-  const slice = array.slice(start, end);
-  const sprite = Sprite.fromUint8Array(slice);
-  const rgbaImage = Sprite.RGBAImage.fromSprite(sprite);
-  const png = Png.fromRGBAImage(rgbaImage);
-  const data = Base64.fromUint8Array(png);
   const {
+    image,
     pixelWidth,
     pixelHeight,
     xDpi = 90,
     yDpi = 90,
-  } = sprite;
+  } = mapSpriteShared(array, start, end);
   const width = (pixelWidth * DRAW_UNITS_PER_INCH) / xDpi;
   const height = (pixelHeight * DRAW_UNITS_PER_INCH) / yDpi;
   const transform = mapTransform(drawTransform);
-  return {
-    tag: 'image',
-    attributes: {
-      x: 0,
-      y: 0,
-      width,
-      height,
-      preserveAspectRatio: 'none',
-      'xlink:href': `data:image/png;base64,${data}`,
-      transform: `matrix(${transform}) translate(0, ${height}) scale(1, -1)`,
-    },
-  };
+  return mapImage(image, width, height, transform);
 }
 
 function mapObjects(fileBoundingBox, objects, array) {
@@ -128,33 +107,10 @@ function mapDraw({
 
   const mappedObjects = mapObjects(fileBoundingBox, objects, array);
 
-  const {
-    minX, maxX, minY, maxY,
-  } = fileBoundingBox;
-
-  const viewBoxWidth = Math.max(maxX - minX, 1);
-  const viewBoxHeight = Math.max(maxY - minY, 1);
-
-  const width = viewBoxWidth * DRAW_UNITS_TO_USER_UNITS;
-  const height = viewBoxHeight * DRAW_UNITS_TO_USER_UNITS;
-
-  return {
-    tag: 'svg',
-    attributes: {
-      width,
-      height,
-      viewBox: `${minX} ${-maxY} ${viewBoxWidth} ${viewBoxHeight}`,
-      xmlns: 'http://www.w3.org/2000/svg',
-      'xmlns:xlink': 'http://www.w3.org/1999/xlink',
-    },
-    children: [{
-      tag: 'g',
-      attributes: {
-        transform: 'scale(1, -1)',
-      },
-      children: mappedObjects,
-    }],
-  };
+  return mapSvg({
+    fileBoundingBox,
+    objects: mappedObjects,
+  });
 }
 
 module.exports = {

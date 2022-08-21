@@ -1,4 +1,4 @@
-const Constants = require('../constants');
+const Constants = require('../../constants');
 
 const TAG_MAP = {
   [Constants.PATH_TAG_END]: '',
