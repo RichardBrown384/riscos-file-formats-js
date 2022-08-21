@@ -1,4 +1,4 @@
-const { extractBitField, logicalShiftLeft } = require('../../common/bitwise');
+const { extractBitField } = require('../../common/bitwise');
 
 function selectPalette(sprite) {
   const {
@@ -6,29 +6,39 @@ function selectPalette(sprite) {
     palette = [],
     wimpPalette,
   } = sprite;
-  return (palette.length === logicalShiftLeft(1, bitsPerPixel)) ? palette : wimpPalette;
+  return (palette.length === 2 ** bitsPerPixel) ? palette : wimpPalette;
+}
+
+function extractColourComponents(mask, bgrColour) {
+  const alpha = (mask === 0) ? 0 : 0xFF;
+  const r = extractBitField(bgrColour, 8, 8);
+  const g = extractBitField(bgrColour, 16, 8);
+  const b = extractBitField(bgrColour, 24, 8);
+  return [r, g, b, alpha];
 }
 
 function mapSprite(sprite) {
   const {
     pixelWidth: width,
     pixelHeight: height,
+    xDpi,
+    yDpi,
     image,
     mask = [],
   } = sprite;
   const palette = selectPalette(sprite);
   const pixels = [];
   for (let n = 0; n < image.length; n += 1) {
-    const { first: bgr_ } = palette[image[n]];
-    const alpha = (mask[n] === 0) ? 0 : 0xFF;
-    pixels.push(extractBitField(bgr_, 8, 8));
-    pixels.push(extractBitField(bgr_, 16, 8));
-    pixels.push(extractBitField(bgr_, 24, 8));
-    pixels.push(alpha);
+    const m = mask[n];
+    const bgrColour = palette[image[n]].first;
+    const components = extractColourComponents(m, bgrColour);
+    pixels.push(...components);
   }
   return {
     width,
     height,
+    xDpi,
+    yDpi,
     pixels,
   };
 }
