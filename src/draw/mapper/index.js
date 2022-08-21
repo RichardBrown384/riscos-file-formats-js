@@ -1,4 +1,3 @@
-const { Png, Base64 } = require('riscos-support');
 const { Sprite } = require('../../sprite');
 
 const MergingBoundingBox = require('./merging-bounding-box');
@@ -23,19 +22,10 @@ function mapPathObject(pathObject) {
   return mapPath(path, attributes);
 }
 
-function mapSpriteShared(array, start, end) {
+function mapSprite(array, start, end) {
   const slice = array.slice(start, end);
   const sprite = Sprite.fromUint8Array(slice);
-  const rgbaImage = Sprite.RGBAImage.fromSprite(sprite);
-  const png = Png.fromRGBAImage(rgbaImage);
-  const image = Base64.fromUint8Array(png);
-  return {
-    image,
-    pixelWidth: sprite.pixelWidth,
-    pixelHeight: sprite.pixelHeight,
-    xDpi: sprite.xDpi || 90,
-    yDpi: sprite.yDpi || 90,
-  };
+  return Sprite.Png.fromSprite(sprite);
 }
 
 function mapSpriteObject(boundingBox, spriteObject, array) {
@@ -43,14 +33,14 @@ function mapSpriteObject(boundingBox, spriteObject, array) {
     start,
     end,
   } = spriteObject;
-  const { image } = mapSpriteShared(array, start, end);
+  const { png } = mapSprite(array, start, end);
   const {
     minX, maxX, minY, maxY,
   } = boundingBox;
   const width = maxX - minX;
   const height = maxY - minY;
   const transform = [1, 0, 0, 1, minX, minY];
-  return mapImage(image, width, height, transform);
+  return mapImage(png, width, height, transform);
 }
 
 function mapSpriteRotatedObject(spriteObject, array) {
@@ -60,16 +50,16 @@ function mapSpriteRotatedObject(spriteObject, array) {
     end,
   } = spriteObject;
   const {
-    image,
-    pixelWidth,
-    pixelHeight,
+    png,
+    width: pixelWidth,
+    height: pixelHeight,
     xDpi = 90,
     yDpi = 90,
-  } = mapSpriteShared(array, start, end);
+  } = mapSprite(array, start, end);
   const width = (pixelWidth * DRAW_UNITS_PER_INCH) / xDpi;
   const height = (pixelHeight * DRAW_UNITS_PER_INCH) / yDpi;
   const transform = mapTransform(drawTransform);
-  return mapImage(image, width, height, transform);
+  return mapImage(png, width, height, transform);
 }
 
 function mapObjects(fileBoundingBox, objects, array) {

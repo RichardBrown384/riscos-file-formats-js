@@ -21,8 +21,8 @@ function mapSprite(sprite) {
   const {
     pixelWidth: width,
     pixelHeight: height,
-    xDpi = 90,
-    yDpi = 90,
+    xDpi,
+    yDpi,
     image,
     mask = [],
   } = sprite;
