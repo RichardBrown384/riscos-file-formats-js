@@ -10,7 +10,7 @@ function readSpriteControlBlock(view) {
   checkAlignment(view, 'misaligned sprite control block');
   return {
     spriteOffset: view.readUint32(),
-    spriteName: view.readStringFully(12),
+    spriteName: view.readString(12),
     wordWidth: view.readUint32(),
     lineHeight: view.readUint32(),
     firstBitUsed: view.readUint32(),
