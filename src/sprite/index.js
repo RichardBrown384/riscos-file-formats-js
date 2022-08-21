@@ -4,11 +4,16 @@ const RiscOSView = require('../common/riscos-view');
 const {
   readSpriteArea,
   readSprite,
+  isSpriteAreaHeaderPresent,
 } = require('./serialisation/read');
 const { mapSprite } = require('./mapper');
 
 module.exports = {
   SpriteArea: {
+    isHeaderPresent(array) {
+      const view = new RiscOSView(array.buffer);
+      return isSpriteAreaHeaderPresent(view);
+    },
     fromUint8Array(array) {
       const view = new RiscOSView(array.buffer);
       return readSpriteArea(view);

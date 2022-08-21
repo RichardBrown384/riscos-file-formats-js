@@ -147,7 +147,7 @@ function readSprite(view) {
   };
 }
 
-function readControlBlock(view) {
+function readSpriteAreaControlBlock(view) {
   return {
     spriteCount: view.readUint32(),
     spriteOffset: view.readUint32(),
@@ -156,7 +156,7 @@ function readControlBlock(view) {
 }
 
 function readSpriteArea(view) {
-  const controlBlock = readControlBlock(view);
+  const controlBlock = readSpriteAreaControlBlock(view);
   const {
     spriteCount,
     spriteOffset,
@@ -174,7 +174,37 @@ function readSpriteArea(view) {
   };
 }
 
+// Sprite files don't have a header
+// We try to check if the file has the right shape
+// by attempting to iterate through the file's sprites
+// If at the end, the position of the next sprite
+// is equal to the length of the file - 4 then
+// this might be a sprite file.
+
+function isSpriteAreaHeaderPresent(view) {
+  const spriteAreaControlBlock = readSpriteAreaControlBlock(view);
+  const {
+    spriteCount,
+    spriteOffset,
+    freeOffset,
+  } = spriteAreaControlBlock;
+  try {
+    let spritePosition = spriteOffset - 4;
+    for (let n = 0; n < spriteCount; n += 1) {
+      view.setPosition(spritePosition);
+      const spriteControlBlock = readSpriteControlBlock(view);
+      spritePosition += spriteControlBlock.spriteOffset;
+    }
+    const adjustedFreeOffset = freeOffset - 4;
+    return spritePosition === adjustedFreeOffset
+        && view.getLength() === adjustedFreeOffset;
+  } catch (e) {
+    return false;
+  }
+}
+
 module.exports = {
   readSprite,
   readSpriteArea,
+  isSpriteAreaHeaderPresent,
 };
