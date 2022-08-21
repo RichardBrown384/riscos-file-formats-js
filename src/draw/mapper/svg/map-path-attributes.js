@@ -1,5 +1,5 @@
-const Constants = require('../constants');
-const { extractBitField } = require('../../common/bitwise');
+const Constants = require('../../constants');
+const { extractBitField } = require('../../../common/bitwise');
 
 const MIN_STROKE_WIDTH = 160;
 
@@ -60,11 +60,11 @@ function mapWindingRule(windingRule) {
       && { [FILL_RULE]: WINDING_RULE_MAP[windingRule] };
 }
 
-function mapStrokeDashoffset({offset = 0 }) {
+function mapStrokeDashoffset({ offset = 0 }) {
   return offset && { [STROKE_DASHOFFSET]: offset };
 }
 
-function mapStrokeDashArray({array = []}) {
+function mapStrokeDashArray({ array = [] }) {
   return array.length && { [STROKE_DASHARRAY]: array };
 }
 
