@@ -1,8 +1,6 @@
 const Constants = require('../../constants');
 const { extractBitField } = require('../../../common/bitwise');
 
-const MIN_STROKE_WIDTH = 160;
-
 const FILL = 'fill';
 const FILL_RULE = 'fill-rule';
 const STROKE = 'stroke';
@@ -11,6 +9,7 @@ const STROKE_LINECAP = 'stroke-linecap';
 const STROKE_LINEJOIN = 'stroke-linejoin';
 const STROKE_DASHOFFSET = 'stroke-dashoffset';
 const STROKE_DASHARRAY = 'stroke-dasharray';
+const VECTOR_EFFECT = 'vector-effect';
 
 const JOIN_MAP = {
   [Constants.JOIN_MITRE]: 'miter',
@@ -42,8 +41,24 @@ function mapColour(colour) {
   return `rgb(${elements})`;
 }
 
-function mapStrokeWidth(outlineWidth) {
-  return Math.max(MIN_STROKE_WIDTH, outlineWidth);
+function mapFill(colour) {
+  return { [FILL]: mapColour(colour) };
+}
+
+function mapStroke(colour) {
+  return { [STROKE]: mapColour(colour) };
+}
+
+function mapStrokeWidth(strokeWidth) {
+  if (strokeWidth !== 0) {
+    return { [STROKE_WIDTH]: strokeWidth };
+  }
+  return {
+    // I would have thought 1px would be correct, but Chrome produces thicker
+    // lines than are perhaps desirable
+    [STROKE_WIDTH]: '0.5px',
+    [VECTOR_EFFECT]: 'non-scaling-stroke',
+  };
 }
 
 function mapJoin(join) {
@@ -81,14 +96,14 @@ function mapPathAttributes(attributes) {
     },
   } = attributes;
   return {
-    [FILL]: mapColour(fillColour),
-    [STROKE]: mapColour(outlineColour),
-    [STROKE_WIDTH]: mapStrokeWidth(outlineWidth),
-    ...(mapJoin(join)),
-    ...(mapCapStart(capStart)),
-    ...(mapWindingRule(windingRule)),
-    ...(mapStrokeDashoffset(dash)),
-    ...(mapStrokeDashArray(dash)),
+    ...mapFill(fillColour),
+    ...mapStroke(outlineColour),
+    ...mapStrokeWidth(outlineWidth),
+    ...mapJoin(join),
+    ...mapCapStart(capStart),
+    ...mapWindingRule(windingRule),
+    ...mapStrokeDashoffset(dash),
+    ...mapStrokeDashArray(dash),
   };
 }
 
