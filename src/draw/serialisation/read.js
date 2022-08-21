@@ -102,10 +102,10 @@ function readPathStyle(view) {
 function readHeader(view) {
   checkAlignment(view, 'misaligned header');
   return {
-    identifier: view.readStringFully(4),
+    identifier: view.readString(4),
     majorVersion: view.readUint32(),
     minorVersion: view.readUint32(),
-    program: view.readStringFully(12),
+    program: view.readString(12),
     boundingBox: readBoundingBox(view),
   };
 }
@@ -135,7 +135,7 @@ function readGroupObject(view) {
   checkAlignment(view, 'misaligned group object');
   return {
     boundingBox: readBoundingBox(view),
-    name: view.readStringFully(12),
+    name: view.readString(12),
   };
 }
 

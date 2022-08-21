@@ -53,19 +53,6 @@ class RiscOSView {
     return v;
   }
 
-  readStringFully(n) {
-    const chars = [];
-    for (let i = 0, terminated = false; i < n; i += 1) {
-      const c = this.readUint8();
-      if (c === 0) {
-        terminated = true;
-      } else if (!terminated) {
-        chars.push(c);
-      }
-    }
-    return String.fromCharCode(...chars);
-  }
-
   readString(n) {
     const codes = [];
     for (let i = 0; i < n; i += 1) {
