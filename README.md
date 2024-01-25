@@ -7,7 +7,7 @@ Javascript library for reading RISC OS Draw, Font, and Sprite [files][file-docum
 ## Installation
 
 ```bash
-npm install git+https://github.com/RichardBrown384/riscos-file-formats-js.git
+npm install git+https://git@github.com/RichardBrown384/riscos-file-formats-js.git
 ```
 
 ## Usage
